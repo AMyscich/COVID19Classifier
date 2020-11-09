@@ -1,6 +1,7 @@
 import csv
-import numpy
+import numpy as np
 import cv2
+import os
 
 class ImageRaster:
 
@@ -31,7 +32,7 @@ class ImageRaster:
     #example of usage
     first_line = 0
     new_width = 128
-    with open('train.csv', newline='') as csvfile:
+    with open("data" + os.path.sep + "train.csv", newline='') as csvfile:
         spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
         for row in spamreader:
             if first_line < 1:
