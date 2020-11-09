@@ -1,5 +1,5 @@
 import csv
-import numpy
+import numpy as np
 import cv2
 
 class ImageRaster:
