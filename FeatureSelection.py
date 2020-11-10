@@ -11,7 +11,7 @@ class FeatureSelection:
 
     # Wrapper method of feature selection using RFE
     def wrapperMethod(self, data, labels, numFeatures=100):
-        model = LogisticRegression(solver='liblinear', max_iter=50)
+        model = LogisticRegression(solver='liblinear', max_iter=100)
         selector = RFE(model, n_features_to_select=numFeatures, step=0.1)
         selector = selector.fit(data, labels)
 
@@ -23,8 +23,9 @@ class FeatureSelection:
 
         return (selector.transform(data), labels)
 
-    # Gets accuracy for wrapper and filter methods
-    def getModel(self, trainingData, trainingLabels, epochs=100, folds=5, numFeatures=100):
+    # Gets best features for wrapper and filter methods
+    # Returns best features from wrapper and filter method
+    def getBestFeatures(self, trainingData, trainingLabels, epochs=100, folds=5, numFeatures=2000):
         trainingData = trainingData.reshape((trainingData.shape[0], np.prod(np.array(list(trainingData.shape)[1:]))))
 
         startTime = time.time()
@@ -39,7 +40,7 @@ class FeatureSelection:
         filterCVAcc = cross_val_score(model, filterFeatures, filterLabels, cv=folds)
 
         print("Accuracy for wrapper method: ", np.average(wrapperCVAcc), "Accuracy for filter method: ", np.average(filterCVAcc))
-        return (np.average(wrapperCVAcc), np.average(filterCVAcc))
+        return (wrapperFeatures, filterFeatures)
 
     # Creates graphs comparing number of features to performance for both filter and wrapper methods
     # featureInterval is the number of features to add between models
@@ -77,6 +78,7 @@ class FeatureSelection:
         self.saveGraph("Wrapper Method Performance", labels, wrapperPerformance, "WrapperMethod.png")
         self.saveGraph("Filter Method Performance", labels, filterPerformance, "FilterMethod.png")
 
+    # Creates and saves a graph given the data and labels
     def saveGraph(self, title, xData, yData, filename):
         plt.scatter(xData, yData)
         plt.plot(xData, yData)
@@ -84,8 +86,22 @@ class FeatureSelection:
         plt.xlabel("Number of Features")
         plt.ylabel("Accuracy")
         plt.savefig(filename)
-
         plt.close()
+
+    # Overlays original image with mask that highlights the pixels selected by feature selection
+    def highlightImage(self, data, labels, numFeatures, origSize):
+        reshapedData = data.reshape((data.shape[0], np.prod(np.array(list(data.shape)[1:]))))
+
+        newData, labels, rankings = self.wrapperMethod(reshapedData, labels, numFeatures)      
+
+        newImage = np.array(rankings).reshape(origSize, origSize)
+        mask = np.ma.masked_where(newImage != 1, newImage)
+
+        for image in data:
+            plt.imshow(image.reshape(origSize, origSize), cmap='gray', interpolation='none')
+            plt.imshow(mask, cmap='jet', alpha=0.5, interpolation='none')
+            plt.show()
+            plt.close()
 
 ## Example Usage
 #import pandas
@@ -104,23 +120,26 @@ class FeatureSelection:
 #    filename = 'train/' + row['filename']
 #    newImage = ImageRaster.read_resized_image(filename, 128)
 #    newImage = cv2.cvtColor(newImage, cv2.COLOR_RGB2GRAY)
-#    temp = []
-#    g, gx, gy = fe.edge_detection(newImage)
-#    g_smooth = fe.smooth_image(g)
-#    temp.append(g)
-#    temp.append(gx)
-#    temp.append(gy)
-#    temp.append(g_smooth)
-#    temp = np.array(temp)
-#    trainData.append(temp)
+#    #temp = []
+#    #g, gx, gy = fe.edge_detection(newImage)
+#    #g_smooth = fe.smooth_image(g)
+#    #temp.append(g)
+#    #temp.append(gx)
+#    #temp.append(gy)
+#    #temp.append(g_smooth)
+#    #temp = np.array(temp)
+#    trainData.append(newImage)
 
 #    trainLabels.append(row[-1])
 
 #trainData = np.array(trainData)
 #trainLabels = np.array(trainLabels)
 
-## Use this to get accuracy of filter and wrapper methods
-##fs.getModel(trainData, trainLabels)
+## Use this to get the best features for wrapper and filter methods, returns tuple (wrapperfeatures, filterfeatures)
+#wrapperFeatures, filterFeatures = fs.getBestFeatures(trainData, trainLabels)
 
 ##Use this to get performance graphs
-#fs.getGraphs(trainData, trainLabels)
+##fs.getGraphs(trainData, trainLabels, 100, 5, 1000)
+
+## trainData must be dimension 2 for this function
+##fs.highlightImage(trainData, trainLabels, 2000, trainData.shape[1])
