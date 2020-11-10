@@ -53,28 +53,28 @@ class FeatureExtract:
 
 
 
+# # Example Usage
+# x = cv2.imread('sandbox/tamu.jpeg', cv2.IMREAD_GRAYSCALE)
+# plt.imshow(x,cmap='gray',vmin=0,vmax=255)
+# plt.show()
 
-x = cv2.imread('sandbox/tamu.jpeg', cv2.IMREAD_GRAYSCALE)
-plt.imshow(x,cmap='gray',vmin=0,vmax=255)
-plt.show()
+# fe = FeatureExtract()
 
-fe = FeatureExtract()
+# # Example on smooth_image() usage:
+# s = fe.smooth_image(x,sd=3.0)
+# plt.imshow(s,cmap='gray',vmin=0,vmax=255)
+# plt.show()
 
-# Example on smooth_image() usage:
-s = fe.smooth_image(x,sd=3.0)
-plt.imshow(s,cmap='gray',vmin=0,vmax=255)
-plt.show()
+# # Example on edge_detection() usage:
+# g, gx, gy = fe.edge_detection(x)
+# plt.imshow(g,cmap='gray',vmin=0,vmax=255)
+# plt.show()
+# plt.imshow(gx,cmap='gray',vmin=0,vmax=255)
+# plt.show()
+# plt.imshow(gy,cmap='gray',vmin=0,vmax=255)
+# plt.show()
 
-# Example on edge_detection() usage:
-g, gx, gy = fe.edge_detection(x)
-plt.imshow(g,cmap='gray',vmin=0,vmax=255)
-plt.show()
-plt.imshow(gx,cmap='gray',vmin=0,vmax=255)
-plt.show()
-plt.imshow(gy,cmap='gray',vmin=0,vmax=255)
-plt.show()
-
-# Smoothing gradient image:
-g_smooth = fe.smooth_image(g,sd=3.0)
-plt.imshow(g_smooth,cmap='gray',vmin=0,vmax=255)
-plt.show()
+# # Smoothing gradient image:
+# g_smooth = fe.smooth_image(g,sd=3.0)
+# plt.imshow(g_smooth,cmap='gray',vmin=0,vmax=255)
+# plt.show()
