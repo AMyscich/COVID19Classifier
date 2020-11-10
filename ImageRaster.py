@@ -28,16 +28,16 @@ class ImageRaster:
         return resized_image
 
 
-    #example of usage
-    first_line = 0
-    new_width = 128
-    with open('train.csv', newline='') as csvfile:
-        spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
-        for row in spamreader:
-            if first_line < 1:
-                first_line += 1
-                continue
+    # #example of usage
+    # first_line = 0
+    # new_width = 128
+    # with open('train.csv', newline='') as csvfile:
+    #     spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
+    #     for row in spamreader:
+    #         if first_line < 1:
+    #             first_line += 1
+    #             continue
 
-            data = row[0].split(',')
-            filename = "train_images/"+data[0]
-            image = read_resized_image(filename, 128)
+    #         data = row[0].split(',')
+    #         filename = "train_images/"+data[0]
+    #         image = read_resized_image(filename, 128)
