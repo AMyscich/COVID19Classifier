@@ -4,6 +4,7 @@ import numpy as np
 import cv2
 from scipy import signal
 from skimage import feature
+from sklearn.decomposition import PCA
 
 # (b.i) Visual feature extraction
 class FeatureExtract:
@@ -117,6 +118,41 @@ class FeatureExtract:
     def blob_detection(self, image, min_sigma=1, max_sigma=50, num_sigma=10):
         blobs = feature.blob_log(image,min_sigma=min_sigma,max_sigma=max_sigma,num_sigma=num_sigma)
         return blobs
+
+    # Given input vectors, return PCA components run on those inputs (80% of variance)
+    # For our case, probably run PCA on class 0 and class 1. Train decision tree on
+    # each classes components. Then, during test, run PCA on each test sample individually,
+    # pass it into tree to get classification. You can also use the components with
+    # matched filtering (call apply_matched_filter with components and new image <-- unsure)
+    def get_images_pca(self, images, n_components=0.8):
+        pca_model = PCA(n_components=n_components,svd_solver='full')
+        pca_model.fit(images)
+        return pca_model.components_
+
+    # templates0 for class 0, templates1 for class 1
+    # (so, for our case, all COVID negative images and all COVID positive images)
+    # In practice, it works better to downsize the templates slightly so you
+    # can 'jostle' the filter around by a bit
+    # cl (cut_length) will cut off pixels on each side of the image in each direction
+    def generate_matched_filter(self, templates0, templates1, cl=0):
+        if cl != 0:
+            return np.mean(templates0[:,cl:-cl,cl:-cl],axis=0),np.mean(templates1[:,cl:-cl,cl:-cl],axis=0)
+        else:
+            return np.mean(templates0,axis=0),np.mean(templates1,axis=0)
+
+
+    # Apply two templates to the image. Return 0 if template 0, 1 if template 1, and results of each
+    # If dimensions don't match, cv2 will do the jostling for us
+    # (The lower result is better because it measures the difference in each image)
+    def apply_matched_filter(self, template0, template1, image):
+        res0 = cv2.matchTemplate(image,template0,cv2.TM_SQDIFF_NORMED)
+        res1 = cv2.matchTemplate(image,template1,cv2.TM_SQDIFF_NORMED)
+        if np.mean(res0) < np.mean(res1):
+            prediction = 0
+        else:
+            prediction = 1
+        return prediction, res0, res1
+
 
 def dirty_plot(image_og, image_new, title):
     plt.subplot(1, 2, 2)
