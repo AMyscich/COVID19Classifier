@@ -63,6 +63,7 @@ class FeatureExtract:
         n_rows = image.shape[0]
         n_cols = image.shape[1]
 
+
         for r in range(n_rows):
             for c in range(n_cols):
                 pixel_integer = int(image[r,c])
@@ -129,29 +130,53 @@ class FeatureExtract:
         pca_model.fit(images)
         return pca_model.components_
 
+    def resize_images(self, images, new_dim):
+        n_images = images.shape[0]
+        new_images = np.zeros((n_images, new_dim[0], new_dim[1]))
+        for datum in range(n_images):
+            new_images[datum] = cv2.resize(images[datum], new_dim)
+
+        return new_images
+
     # templates0 for class 0, templates1 for class 1
     # (so, for our case, all COVID negative images and all COVID positive images)
     # In practice, it works better to downsize the templates slightly so you
     # can 'jostle' the filter around by a bit
     # cl (cut_length) will cut off pixels on each side of the image in each direction
-    def generate_matched_filter(self, templates0, templates1, cl=0):
-        if cl != 0:
-            return np.mean(templates0[:,cl:-cl,cl:-cl],axis=0),np.mean(templates1[:,cl:-cl,cl:-cl],axis=0)
-        else:
-            return np.mean(templates0,axis=0),np.mean(templates1,axis=0)
+    def generate_matched_filter(self, templates, cl=3):
+        n_templates = templates.shape[0]
+        n_rows = templates.shape[1]
+        n_cols = templates.shape[2]
+        templates_resized = self.resize_images(templates, (n_rows-2*cl, n_cols-2*cl))
+        return np.mean(templates_resized,axis=0)
 
 
     # Apply two templates to the image. Return 0 if template 0, 1 if template 1, and results of each
     # If dimensions don't match, cv2 will do the jostling for us
     # (The lower result is better because it measures the difference in each image)
     def apply_matched_filter(self, template0, template1, image):
+        # res0 = np.sqrt((template0-image)**2)
+        # res1 = np.sqrt((template1-image)**2)
+        template0 = np.float32(template0)
+        template1 = np.float32(template1)
+        image = np.float32(image)
         res0 = cv2.matchTemplate(image,template0,cv2.TM_SQDIFF_NORMED)
         res1 = cv2.matchTemplate(image,template1,cv2.TM_SQDIFF_NORMED)
-        if np.mean(res0) < np.mean(res1):
+        if np.amin(res0) < np.amin(res1):
             prediction = 0
         else:
             prediction = 1
         return prediction, res0, res1
+
+    # Generate Histogram of Gradient features (HoG)
+    # Returns (feature (1D), hog_image(visualisation of HoG))
+    # Use the 1D feature unless you want to inspect what is being generated
+    # Current parameters are what's used in examples, unsure of what they affect
+    # There's an option of normalizing the image, but since we have that implemented
+    # I haven't opted to enable it
+    def get_hog(self, image):
+        feature, vis = feature.hog(image, orientations=8, pixels_per_cell=(16,16), cells_per_block=(1,1), visualize=True, multichannel=False)
+        return feature, vis
 
 
 def dirty_plot(image_og, image_new, title):
