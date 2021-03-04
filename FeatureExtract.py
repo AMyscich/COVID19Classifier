@@ -175,26 +175,26 @@ class FeatureExtract:
     # There's an option of normalizing the image, but since we have that implemented
     # I haven't opted to enable it
     def get_hog(self, image):
-        feature, vis = feature.hog(image, orientations=8, pixels_per_cell=(16,16), cells_per_block=(1,1), visualize=True, multichannel=False)
-        return feature, vis
+        hog_feat, vis = feature.hog(image, orientations=8, pixels_per_cell=(16,16), cells_per_block=(1,1), visualize=True, multichannel=False)
+        return hog_feat, vis
 
 
 def dirty_plot(image_og, image_new, title):
-    plt.subplot(1, 2, 2)
-    plt.imshow(image_og,cmap='gray',vmin=0,vmax=255)
-    plt.title('Original Image')
-    plt.subplot(1, 2, 1)
+    # plt.subplot(1, 2, 2)
+    # plt.imshow(image_og,cmap='gray',vmin=0,vmax=255)
+    # plt.title('Original Image')
+    # plt.subplot(1, 2, 1)
     plt.imshow(image_new,cmap='gray',vmin=0,vmax=255)
     plt.title(title)
     plt.show()
 
-# # Pixels in range 0(black)-255(white)
+# Pixels in range 0(black)-255(white)
 
 # Sandbox image
 # x = cv2.imread('sandbox/tamu.jpeg', cv2.IMREAD_GRAYSCALE)
 
 # Demo x-ray image
-# x = cv2.imread('data/train/img_0.jpeg', cv2.IMREAD_GRAYSCALE)
+x = cv2.imread('data/train/img_150.jpeg', cv2.IMREAD_GRAYSCALE)
 
 # Manual image construction
 # n_rows = 256
@@ -202,30 +202,30 @@ def dirty_plot(image_og, image_new, title):
 # min_val = 20
 # max_val = 200
 # x = np.zeros((n_rows,n_cols))
-
-# Manual gradient image from top to bottom
+#
+# # Manual gradient image from top to bottom
 # for r in range(n_rows):
 #     x[r:,] = r
 #     if r < min_val:
 #         x[r,:] = min_val
 #     if r > max_val:
 #         x[r,:] = max_val
-
-# Horizontal line image
+#
+# # Horizontal line image
 # for r in range(n_rows):
 #     if r%4 == 0 or r%4==1:
 #         x[r,:] = max_val
 #     else:
 #         x[r,:] = min_val
-
-# Vertical line image
+#
+# # Vertical line image
 # for c in range(n_cols):
 #     if r%4 == 0 or r%4==1:
 #         x[:,c] = max_val
 #     else:
 #         x[:,c] = min_val
-
-# Diagonal lines image
+#
+# # Diagonal lines image
 # for r in range(n_rows):
 #     for c in range(n_cols):
 #         if (r < c+2 and r > c-2) or (r+c < n_rows+2 and r+c > n_rows-2):
@@ -234,74 +234,81 @@ def dirty_plot(image_og, image_new, title):
 #             x[r,c] = min_val
 
 
-# # Example Usage
+# Example Usage
 # x = cv2.imread('sandbox/tamu.jpeg', cv2.IMREAD_GRAYSCALE)
 # plt.imshow(x,cmap='gray',vmin=0,vmax=255)
 # plt.show()
 
+x = cv2.resize(x, (256,256))
+
 # fe = FeatureExtract()
 
-# # Example on smooth_image() usage:
-# s = fe.smooth_image(x,sd=3.0)
-# plt.imshow(s,cmap='gray',vmin=0,vmax=255)
-# plt.show()
-
+# Example on smooth_image() usage:
+# # s = fe.smooth_image(x,sd=1.0)
+# # plt.imshow(s,cmap='gray',vmin=0,vmax=255)
+# # plt.show()
+#
 # # Example on edge_detection() usage:
-# g, gx, gy = fe.edge_detection(x)
-# plt.imshow(g,cmap='gray',vmin=0,vmax=255)
-# plt.show()
-# plt.imshow(gx,cmap='gray',vmin=0,vmax=255)
-# plt.show()
-# plt.imshow(gy,cmap='gray',vmin=0,vmax=255)
-# plt.show()
-
+# # g, gx, gy = fe.edge_detection(x)
+# # plt.imshow(g,cmap='gray',vmin=0,vmax=255)
+# # plt.show()
+# # plt.imshow(gx,cmap='gray',vmin=0,vmax=255)
+# # plt.show()
+# # plt.imshow(gy,cmap='gray',vmin=0,vmax=255)
+# # plt.show()
+#
 # # Smoothing gradient image:
-# g_smooth = fe.smooth_image(g,sd=3.0)
-# plt.imshow(g_smooth,cmap='gray',vmin=0,vmax=255)
-# plt.show()
-
-# plt.imshow(x,cmap='gray',vmin=0,vmax=255)
-# plt.title('Base Image')
-# plt.show()
+# # g_smooth = fe.smooth_image(g,sd=1.0)
+# # plt.imshow(g_smooth,cmap='gray',vmin=0,vmax=255)
+# # plt.show()
+# #
+# # plt.imshow(x,cmap='gray',vmin=0,vmax=255)
+# # plt.title('Base Image')
+# # plt.show()
 # fe = FeatureExtract()
-
+#
+# dirty_plot(x, x, 'Original Image')
+#
+# s = fe.smooth_image(x, sd=1.0)
+# dirty_plot(x, s, 'Gaussian Smoothing (Std = 1.0)')
+#
 # # # Example on truncate image
 # trun = fe.truncate_image(x, 122.0)
-# dirty_plot(x, trun, 'Truncate')
-
+# dirty_plot(x, trun, 'Truncate (Cutoff = 122.0)')
+#
 # # # Example on invert image
 # inv = fe.invert_image(x)
 # dirty_plot(x, inv, 'Invert')
-
+#
 # # Example on normalize image (linear) (transforms to range 0-255)
 # norm_l = fe.normalize_image(x, type='linear',new_min=0.0,new_max=255.0)
 # dirty_plot(x, norm_l, 'Linear Normalization')
-
+#
 # # Example on normalize image (nonlinear)
 # norm_n = fe.normalize_image(x, type='nonlinear',new_min=0.0,new_max=255.0, k=0.1)
-# dirty_plot(x, norm_n, 'Nonlinear Normalization')
-
+# dirty_plot(x, norm_n, 'Sigmoid Normalization')
+#
 # # # Example on equalize image
 # e = fe.equalize_image(x)
-# dirty_plot(x, e, 'Image Equalization')
-
+# dirty_plot(x, e, 'Histogram Equalization')
+#
 # # Example on smooth_image() usage:
-# s = fe.smooth_image(e,sd=1.0)
-# dirty_plot(x, s, 'Image Smoothing')
-
+# # s = fe.smooth_image(e,sd=1.0)
+# # dirty_plot(x, s, 'Image Smoothing')
+#
 # # Example on blob_detection() usage (run on smoothed version of equalized image):
 # # blobs = fe.blob_detection(s)
 # # print(blobs)
-
+#
 # # # Example on edge_detection() usage:
-# g, gx, gy = fe.edge_detection(x)
-# dirty_plot(x, g, 'Gradient')
-# dirty_plot(x, gx, 'X-Gradient')
-# dirty_plot(x, gy, 'Y-Gradient')
-
+# # g, gx, gy = fe.edge_detection(x)
+# # dirty_plot(x, g, 'Gradient')
+# # dirty_plot(x, gx, 'X-Gradient')
+# # dirty_plot(x, gy, 'Y-Gradient')
+#
 # # # Smoothing image, then edge detection of smoothed image
 # # # (Edge detection very sensitive to noise, so we usually smooth beforehand)
 # g, gx, gy = fe.edge_detection(s)
-# dirty_plot(x, g, 'Gradient (Smoothed)')
-# dirty_plot(x, gx, 'X-Gradient (Smoothed)')
-# dirty_plot(x, gy, 'Y-Gradient (Smoothed)')
+# dirty_plot(x, g, 'Gradient w/ Smoothed')
+# dirty_plot(x, gx, 'X-Gradient w/ Smoothed')
+# dirty_plot(x, gy, 'Y-Gradient w/ Smoothed')
